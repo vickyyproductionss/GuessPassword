@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChestImage: {fileID: 21300000, guid: e5d4d6c52199d41e6b52da7abec31a42, type: 3}
   ChestName: The Silver Chest
-  PrizeMoney: 10-50
+  PrizeMoney: 20-50
   DigitsToUnlock: Four Digits Password
   _lockerDigits: 1
   TotalPossiblePasswords: 9000
-  StartingPrize: 10
+  StartingPrize: 20
   MaximumPrize: 50

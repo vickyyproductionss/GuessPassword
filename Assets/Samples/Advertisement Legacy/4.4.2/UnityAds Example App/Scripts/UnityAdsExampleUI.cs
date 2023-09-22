@@ -19,7 +19,8 @@ public class UnityAdsExampleUI : MonoBehaviour
 
     private string textLog = "DEBUG LOG: \n";
 
-    private void Awake()
+	[Obsolete]
+	private void Awake()
     {
         //if you didn't assign in the inspector
         if (unityAdsManager == null)

@@ -73,7 +73,6 @@ public class PaymentHandler : MonoBehaviour
 					// Call the Cloud Script function
 					PlayFabClientAPI.ExecuteCloudScript(request, result =>
 					{
-						Debug.Log(result.FunctionResult);
 						PlayerDataManager.PlayerData _playerData = JsonConvert.DeserializeObject<PlayerDataManager.PlayerData>(result.FunctionResult.ToString());
 						amountInWallet += _playerData.Amount;
 						amountInWallet += _playerData.SpentAmount;
@@ -88,7 +87,7 @@ public class PaymentHandler : MonoBehaviour
 					}, error =>
 					{
 						// Handle error response
-						Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+						PFManager.instance.ShowMessage("Error", "Something went wrong!","Error");
 					});
 				}
 			}
@@ -109,7 +108,6 @@ public class PaymentHandler : MonoBehaviour
 		{
 			PlayerDataManager.Instance.FetchLatestData();
 			FetchLatestAmount();
-			Debug.Log(result.FunctionResult);
 			if(result.FunctionResult != null)
 			{
 				if(result.FunctionResult.ToString() == "1")
@@ -121,7 +119,7 @@ public class PaymentHandler : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 		});
 	}
 

@@ -41,7 +41,6 @@ public class PlayerDataManager : MonoBehaviour
 		// Call the Cloud Script function
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
-			Debug.Log(result.FunctionResult);
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			playerData = _playerData;
 			OnDataRecieved(playerData);
@@ -49,7 +48,6 @@ public class PlayerDataManager : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 	}
 	public void FetchLatestChances()
@@ -64,13 +62,11 @@ public class PlayerDataManager : MonoBehaviour
 		// Call the Cloud Script function
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
-			Debug.Log(result.FunctionResult);
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			playerData.PurchasedChances = _playerData.PurchasedChances;
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 	}
 	void OnDataRecieved(PlayerData data)

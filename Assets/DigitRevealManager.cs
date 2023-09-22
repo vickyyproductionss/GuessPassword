@@ -49,8 +49,8 @@ public class DigitRevealManager : MonoBehaviour
 			return;
 		}
 		PricingForRevealText.gameObject.SetActive(true);
-		int priceToReveal = digitCountToreveal * 5;
-		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits for \n INR {priceToReveal.ToString()}";
+		int priceToReveal = digitCountToreveal * 10;
+		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits for INR {priceToReveal.ToString()}";
 		PricingForRevealText.GetComponent<Button>().interactable = true;
 		PricingForRevealText.fontStyle = FontStyles.Normal;
 		PricingForRevealText.fontStyle = FontStyles.Underline;
@@ -63,7 +63,7 @@ public class DigitRevealManager : MonoBehaviour
 	{
 		string lockerid = PFManager.instance.GetActiveLockerID();
 		int lockerdigits = (PFManager.instance.ActiveChest.TotalPossiblePasswords / 3).ToString().Length;
-		int priceToReveal = (lockerdigits - 3) * 5;
+		int priceToReveal = (lockerdigits - 3) * 10;
 		if (amount >= priceToReveal)
 		{
 			RevealDigitsForThisLocker(lockerid, lockerdigits);
@@ -87,12 +87,11 @@ public class DigitRevealManager : MonoBehaviour
 			};
 			PlayFabClientAPI.ExecuteCloudScript(request, result =>
 			{
-				Debug.Log(result.FunctionResult + "Is the result we got");
 				SaveToFirebase(PFManager.instance.GetActiveLockerID(), result.FunctionResult.ToString());
 
 			}, error =>
 			{
-				Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+				PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 			});
 		}
 	}
@@ -143,7 +142,6 @@ public class DigitRevealManager : MonoBehaviour
 					// Call the Cloud Script function
 					PlayFabClientAPI.ExecuteCloudScript(request, result =>
 					{
-						Debug.Log(result.FunctionResult);
 						PlayerDataManager.PlayerData _playerData = JsonConvert.DeserializeObject<PlayerDataManager.PlayerData>(result.FunctionResult.ToString());
 						amountInWallet += _playerData.Amount;
 						amountInWallet += _playerData.SpentAmount;
@@ -151,7 +149,7 @@ public class DigitRevealManager : MonoBehaviour
 					}, error =>
 					{
 						// Handle error response
-						Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+						PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 					});
 				}
 			}

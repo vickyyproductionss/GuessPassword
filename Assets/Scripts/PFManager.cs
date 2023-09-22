@@ -103,7 +103,6 @@ public class PFManager : MonoBehaviour
 	}
 	private void OnLoginSuccess(LoginResult result)
 	{
-		Debug.Log("PlayFab Login Successful!");
 		PlayerPrefs.SetString("PF_ID", result.PlayFabId);
 		// You can now access player data or perform other actions
 		// Save players unique device identifier to firebase firestore
@@ -258,7 +257,7 @@ public class PFManager : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+
 		});
 	}
 	public string GetActiveLockerID()
@@ -298,14 +297,11 @@ public class PFManager : MonoBehaviour
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
 			LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
-			Debug.Log(lockerData.LockerID + " is locker ID");
 			ThreeDigitLockerID = lockerData.LockerID;
-			Debug.Log("Cloud Script Success!");
 			
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 		var request2 = new ExecuteCloudScriptRequest
 		{
@@ -318,13 +314,10 @@ public class PFManager : MonoBehaviour
 		PlayFabClientAPI.ExecuteCloudScript(request2, result =>
 		{
 			LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
-			Debug.Log(lockerData.LockerID + " is locker ID");
 			FourDigitLockerID = lockerData.LockerID;
-			Debug.Log("Cloud Script Success!");
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 		var request3 = new ExecuteCloudScriptRequest
 		{
@@ -337,13 +330,10 @@ public class PFManager : MonoBehaviour
 		PlayFabClientAPI.ExecuteCloudScript(request3, result =>
 		{
 			LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
-			Debug.Log(lockerData.LockerID + " is locker ID");
 			FiveDigitLockerID = lockerData.LockerID;
-			Debug.Log("Cloud Script Success!");
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 		var request4 = new ExecuteCloudScriptRequest
 		{
@@ -356,15 +346,13 @@ public class PFManager : MonoBehaviour
 		PlayFabClientAPI.ExecuteCloudScript(request4, result =>
 		{
 			LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
-			Debug.Log(lockerData.LockerID + " is locker ID");
 			SixDigitLockerID = lockerData.LockerID;
-			Debug.Log("Cloud Script Success!");
 			GetTotalChancesForToday();
 			DigitRevealManager.Instance.CheckPurchasedDigits();
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 		});
 
 	}
@@ -455,7 +443,7 @@ public class PFManager : MonoBehaviour
 			}
 			else
 			{
-				Debug.LogError("Could not initialize Firebase: " + dependencyStatus);
+				PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 			}
 		});
 	}
@@ -482,7 +470,6 @@ public class PFManager : MonoBehaviour
 		auth = FirebaseAuth.DefaultInstance;
 		firestore = FirebaseFirestore.DefaultInstance;
 		IsFirebaseInitialised = true;
-		Debug.Log("Firebase Initialized!");
 	}
 	#endregion
 
@@ -499,7 +486,6 @@ public class PFManager : MonoBehaviour
 		// Call the Cloud Script function
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
-			Debug.Log(result.FunctionResult);
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			PlayerDataManager.Instance.playerData.PurchasedChances = _playerData.PurchasedChances;
 			int Chances = PlayerDataManager.Instance.playerData.PurchasedChances;
@@ -517,32 +503,40 @@ public class PFManager : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 		});
 	}
 	private void MatchMyPassword(string key, string value)
 	{
-		Debug.Log($"This key is passed {key}");
-		float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
-		if (prizeMoney > ActiveChest.MaximumPrize)
+		if(!string.IsNullOrEmpty(value))
 		{
-			prizeMoney = ActiveChest.MaximumPrize;
-		}
-		var request = new ExecuteCloudScriptRequest
-		{
-			FunctionName = "checkPasswordFromServer",
-			GeneratePlayStreamEvent = true,
-			FunctionParameter = new
+			float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
+			if (prizeMoney > ActiveChest.MaximumPrize)
 			{
-				key = key,
-				value = value,
-				attemptPrizeMoney = prizeMoney
+				prizeMoney = ActiveChest.MaximumPrize;
 			}
-		};
-		PlayFabClientAPI.ExecuteCloudScript(request, OnExecuteCloudScriptSuccess, OnExecuteCloudScriptFailure);
+			var request = new ExecuteCloudScriptRequest
+			{
+				FunctionName = "checkPasswordFromServer",
+				GeneratePlayStreamEvent = true,
+				FunctionParameter = new
+				{
+					key = key,
+					value = value,
+					attemptPrizeMoney = prizeMoney
+				}
+			};
+			PlayFabClientAPI.ExecuteCloudScript(request, OnExecuteCloudScriptSuccess, OnExecuteCloudScriptFailure);
+		}
+		else
+		{
+			ShowMessage("Warning", "Please enter a password", "Warning");
+		}
 	}
 	private void OnExecuteCloudScriptSuccess(ExecuteCloudScriptResult result)
 	{
+		IPManager.instance.AgainSelect();
+		IPManager.instance.EmptyTheIP();
 		LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
 		if(lockerData != null )
 		{
@@ -671,7 +665,7 @@ public class PFManager : MonoBehaviour
 		{
 			if(task.IsCompleted)
 			{
-				Debug.Log("LockerUnlocked");
+
 			}
 		});
 	}
@@ -679,7 +673,6 @@ public class PFManager : MonoBehaviour
 	void SaveLockerData(string lockerID, string PasswordUsed, string status)
 	{
 		string PName = PlayerPrefs.GetString("PName").ToString();
-		Debug.Log($"Sending this name: {PName}");
 		Dictionary<string, object> attempt = new Dictionary<string, object>
 		{
 			{ "LockerID", lockerID },
@@ -727,7 +720,7 @@ public class PFManager : MonoBehaviour
 
 	private void OnExecuteCloudScriptFailure(PlayFabError error)
 	{
-		Debug.LogError("CloudScript error: " + error.ErrorMessage);
+		PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 	}
 	public void OnWatchingAdFinished()
 	{
@@ -870,7 +863,6 @@ public class PFManager : MonoBehaviour
 		// Call the Cloud Script function
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
-			Debug.Log(result.FunctionResult);
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			if(AmountRequested > _playerData.Amount)
 			{
@@ -898,7 +890,7 @@ public class PFManager : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
+			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 		});
 	}
 
@@ -962,25 +954,23 @@ public class PFManager : MonoBehaviour
 	}
 	private void OnDisplayNameUpdated(UpdateUserTitleDisplayNameResult result)
 	{
-		Debug.Log("Display name updated successfully!");
+
 	}
 	private void OnError(PlayFabError error)
 	{
-		Debug.LogError("Error updating display name: " + error.ErrorMessage);
+		PFManager.instance.ShowMessage("Error", "Something went wrong!\n Report at vickychaudhary8955@gmail.com", "Error");
 	}
 	void RegisterSuccess()
 	{
 		NameWindow.SetActive(false);
 		PlayerPrefs.SetInt("Registered", 1);
 		PlayerPrefs.SetInt("Name", 1);
-		Debug.Log("Player data saved to Firestore!");
 		ShowMessage("Congratulations !!!", "You're registered successfully", "Success");
 	}
 	void RegisterFailed()
 	{
 		NameWindow.SetActive(false);
 		ShowMessage("OOPS !!!", "Something went wrong \n Check your connection", "Error");
-		Debug.LogError("Error saving player data ");
 	}
 	public void OnClick_ContinueInPassWindow(TMP_InputField PlayerPassField)
 	{
