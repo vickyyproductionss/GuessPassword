@@ -18,9 +18,17 @@ public class PositionHandler : MonoBehaviour
 		// Loop through all child GameObjects of the current parent.
 		foreach (Transform child in parent)
 		{
-			// Do something with the child GameObject here.
-			// For example, print its name.
-			Debug.Log("Name is : " + child.gameObject.name);
+			RectTransform rectTransform = child.GetComponent<RectTransform>();
+
+			if (rectTransform != null)
+			{
+				// Reset the RectTransform properties to their default values.
+				rectTransform.anchorMin = Vector2.zero;
+				rectTransform.anchorMax = Vector2.one;
+				rectTransform.sizeDelta = Vector2.zero;
+				rectTransform.anchoredPosition = Vector2.zero;
+				rectTransform.pivot = new Vector2(0.5f, 0.5f);
+			}
 
 			// Recursively call the function to iterate through the child's children.
 			IterateThroughHierarchy(child);
