@@ -12,6 +12,7 @@ public class PlayerDataManager : MonoBehaviour
 	[SerializeField] TMP_Text AmountText,PlayerNameText;
 	public static int WinningAmount;
 	public static PlayerDataManager Instance;
+	public static int WalletBalance;
 	private void Awake()
 	{
 		Instance = this;
@@ -88,7 +89,12 @@ public class PlayerDataManager : MonoBehaviour
 							amountInWallet += amt;
 						}
 					}
-					if(amountInWallet + data.SpentAmount > 0)
+					WalletBalance = amountInWallet + data.Amount + data.SpentAmount;
+					if(WalletBalance < 0)
+					{
+						WalletBalance = 0;
+					}
+					if (amountInWallet + data.SpentAmount > 0)
 					{
 						AmountText.text = FormatNumber(data.Amount);
 						WinningAmount = data.Amount;
