@@ -127,7 +127,7 @@ public class PaymentHandler : MonoBehaviour
 
     public void FetchLatestAmount()
     {
-		AmountInWalletText.text = "NA";
+		AmountInWalletText.text = "";
 		CollectionReference PaymentsRef = firestore.Collection("PaymentRequests");
 		PaymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
 		{

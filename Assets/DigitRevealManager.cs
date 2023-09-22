@@ -19,6 +19,27 @@ public class DigitRevealManager : MonoBehaviour
 	{
 		Instance = this;
 	}
+	public void CheckPurchasedDigits()
+	{
+		FirebaseFirestore.DefaultInstance.Collection("users").Document(SystemInfo.deviceUniqueIdentifier).Collection("RevealedDigits").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+		{
+			if(task.IsCompleted)
+			{
+				QuerySnapshot snapshot = task.Result;
+				ShowPricing();
+				foreach(var item in snapshot)
+				{
+					if(item.GetValue<string>("LockerID") == PFManager.instance.GetActiveLockerID())
+					{
+						PricingForRevealText.text = "Password starts with: " + item.GetValue<string>("Digits");
+						PricingForRevealText.GetComponent<Button>().interactable = false;
+						PricingForRevealText.fontStyle = FontStyles.Normal;
+						PricingForRevealText.fontStyle = FontStyles.Bold;
+					}
+				}
+			}
+		});
+	}
 	public void ShowPricing()
 	{
 		int digitCountToreveal = (PFManager.instance.ActiveChest.TotalPossiblePasswords / 3).ToString().Length - 3;
@@ -29,7 +50,8 @@ public class DigitRevealManager : MonoBehaviour
 		}
 		PricingForRevealText.gameObject.SetActive(true);
 		int priceToReveal = digitCountToreveal * 5;
-		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits in INR {priceToReveal.ToString()}";
+		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits for \n INR {priceToReveal.ToString()}";
+		PricingForRevealText.GetComponent<Button>().interactable = true;
 		PricingForRevealText.fontStyle = FontStyles.Normal;
 		PricingForRevealText.fontStyle = FontStyles.Underline;
 	}
@@ -66,15 +88,30 @@ public class DigitRevealManager : MonoBehaviour
 			PlayFabClientAPI.ExecuteCloudScript(request, result =>
 			{
 				Debug.Log(result.FunctionResult + "Is the result we got");
-				PricingForRevealText.text = "Revealed digits are: " + result.FunctionResult;
-				PricingForRevealText.GetComponent<Button>().interactable = false;
-				PricingForRevealText.fontStyle = FontStyles.UpperCase;
+				SaveToFirebase(PFManager.instance.GetActiveLockerID(), result.FunctionResult.ToString());
 
 			}, error =>
 			{
 				Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 			});
 		}
+	}
+	void SaveToFirebase(string lockerID, string digits)
+	{
+		Dictionary<string, object> data = new Dictionary<string, object>()
+		{
+			{"LockerID",lockerID},
+			{"Digits",digits }
+		};
+		FirebaseFirestore.DefaultInstance.Collection("users").Document(SystemInfo.deviceUniqueIdentifier).Collection("RevealedDigits").Document(lockerID).SetAsync(data).ContinueWithOnMainThread(task =>
+		{
+			if(task.IsCompleted)
+			{
+				PricingForRevealText.text = "Password starts with: " + digits;
+				PricingForRevealText.GetComponent<Button>().interactable = false;
+				PricingForRevealText.fontStyle = FontStyles.UpperCase;
+			}
+		});
 	}
 	public void GetAmountInWallet(PaymentCallback callback)
 	{
