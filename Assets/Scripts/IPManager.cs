@@ -19,7 +19,10 @@ public class IPManager : MonoBehaviour
 	{
 		instance = this;
 	}
-
+	public void EmptyTheIP()
+	{
+		IP.text = "";
+	}
 	public void OnLockerTypeChanged(LockerDigits ActiveLockerDigit)
 	{
 		for (int i = 0; i < 6; i++)

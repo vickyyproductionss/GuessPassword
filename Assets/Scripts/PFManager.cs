@@ -508,26 +508,35 @@ public class PFManager : MonoBehaviour
 	}
 	private void MatchMyPassword(string key, string value)
 	{
-		float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
-		if (prizeMoney > ActiveChest.MaximumPrize)
+		if(!string.IsNullOrEmpty(value))
 		{
-			prizeMoney = ActiveChest.MaximumPrize;
-		}
-		var request = new ExecuteCloudScriptRequest
-		{
-			FunctionName = "checkPasswordFromServer",
-			GeneratePlayStreamEvent = true,
-			FunctionParameter = new
+			float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
+			if (prizeMoney > ActiveChest.MaximumPrize)
 			{
-				key = key,
-				value = value,
-				attemptPrizeMoney = prizeMoney
+				prizeMoney = ActiveChest.MaximumPrize;
 			}
-		};
-		PlayFabClientAPI.ExecuteCloudScript(request, OnExecuteCloudScriptSuccess, OnExecuteCloudScriptFailure);
+			var request = new ExecuteCloudScriptRequest
+			{
+				FunctionName = "checkPasswordFromServer",
+				GeneratePlayStreamEvent = true,
+				FunctionParameter = new
+				{
+					key = key,
+					value = value,
+					attemptPrizeMoney = prizeMoney
+				}
+			};
+			PlayFabClientAPI.ExecuteCloudScript(request, OnExecuteCloudScriptSuccess, OnExecuteCloudScriptFailure);
+		}
+		else
+		{
+			ShowMessage("Warning", "Please enter a password", "Warning");
+		}
 	}
 	private void OnExecuteCloudScriptSuccess(ExecuteCloudScriptResult result)
 	{
+		IPManager.instance.AgainSelect();
+		IPManager.instance.EmptyTheIP();
 		LockerData lockerData = JsonConvert.DeserializeObject<LockerData>(result.FunctionResult.ToString());
 		if(lockerData != null )
 		{

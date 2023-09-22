@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChestImage: {fileID: 21300000, guid: e0b913b3b1ca94b87b5a21b8b057726c, type: 3}
   ChestName: The Golden Chest
-  PrizeMoney: 20-250
+  PrizeMoney: 30-250
   DigitsToUnlock: Five Digit Password
   _lockerDigits: 2
   TotalPossiblePasswords: 90000
-  StartingPrize: 20
+  StartingPrize: 30
   MaximumPrize: 250

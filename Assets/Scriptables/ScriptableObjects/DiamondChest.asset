@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChestImage: {fileID: 21300000, guid: 1a0dff41378534022bcc4460b654766a, type: 3}
   ChestName: The Diamond Chest
-  PrizeMoney: 50-2000
+  PrizeMoney: 40-2000
   DigitsToUnlock: Six Digits Passwords
   _lockerDigits: 3
   TotalPossiblePasswords: 900000
-  StartingPrize: 50
+  StartingPrize: 40
   MaximumPrize: 2000
