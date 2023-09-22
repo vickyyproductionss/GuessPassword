@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id,@string/default_web_client_id">
+  <string name="gcm_defaultSenderId" translatable="false">558624987170</string>
+  <string name="google_storage_bucket" translatable="false">guessthepassword.appspot.com</string>
+  <string name="project_id" translatable="false">guessthepassword</string>
+  <string name="google_api_key" translatable="false">AIzaSyAD0GAfjtE9h1TNWDpvaCtDe_QcCP5Y6VI</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyAD0GAfjtE9h1TNWDpvaCtDe_QcCP5Y6VI</string>
+  <string name="google_app_id" translatable="false">1:558624987170:android:3518d92792e14877bc527b</string>
+  <string name="default_web_client_id" translatable="false">558624987170-ogkknq64enck3499etvnap8srnc026pc.apps.googleusercontent.com</string>
+</resources>

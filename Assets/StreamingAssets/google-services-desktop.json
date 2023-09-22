@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "558624987170",
+    "project_id": "guessthepassword",
+    "storage_bucket": "guessthepassword.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558624987170:android:3518d92792e14877bc527b",
+        "android_client_info": {
+          "package_name": "com.VGames.GuessThePassword"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "558624987170-ogkknq64enck3499etvnap8srnc026pc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAD0GAfjtE9h1TNWDpvaCtDe_QcCP5Y6VI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "558624987170-ogkknq64enck3499etvnap8srnc026pc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
