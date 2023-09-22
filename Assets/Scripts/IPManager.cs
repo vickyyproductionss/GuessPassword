@@ -80,11 +80,9 @@ public class IPManager : MonoBehaviour
 	{
 		if (IP.text.Length == IP.characterLimit)
 		{
-			Debug.Log($"Checking for this pass {Password}");
 			CheckIfPassAlreadyEntered(Password);
 		}
 	}
-	[SerializeField] string pname = "EMPTY";
 	void CheckIfPassAlreadyEntered(string password)
 	{
 		char[] chars = password.ToCharArray();
@@ -131,7 +129,6 @@ public class IPManager : MonoBehaviour
 					}
 					else
 					{
-						Debug.Log("Document does not exist.");
 						CheckPasswordButton.interactable = true;
 					}
 				}

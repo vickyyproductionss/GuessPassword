@@ -25,7 +25,7 @@ public class ConnectionHandler : MonoBehaviour
 			//	// Connection is alive
 			//	if (!isConnectionAlive)
 			//	{
-			//		Debug.Log("Internet connection is now alive.");
+			//		a("Internet connection is now alive.");
 			//		NoInternetPopup.SetActive(false);
 			//		// Add your debug or gameplay logic here when the connection is restored
 			//	}
@@ -37,7 +37,7 @@ public class ConnectionHandler : MonoBehaviour
 			//	if (isConnectionAlive)
 			//	{
 			//		NoInternetPopup.SetActive(true);
-			//		Debug.LogWarning("Internet connection is lost.");
+			//		aWarning("Internet connection is lost.");
 			//		// Add your debug or gameplay logic here when the connection is lost
 			//	}
 			//	isConnectionAlive = false;

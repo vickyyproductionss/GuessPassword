@@ -140,10 +140,9 @@ public class UnityAdsManager : MonoBehaviour, IUnityAdsInitializationListener, I
         testMode = isOn;
     }
 
-    //wrapper around debug.log to allow broadcasting log strings to the UI
+    //wrapper around a to allow broadcasting log strings to the UI
     void DebugLog(string msg)
     {
         OnDebugLog?.Invoke(msg);
-        Debug.Log(msg);
     }
 }

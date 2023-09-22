@@ -60,7 +60,7 @@ public class GoogleAdsManager : MonoBehaviour
 	//		rewardedAd = null;
 	//	}
 
-	//	Debug.Log("Loading the rewarded ad.");
+	//	a("Loading the rewarded ad.");
 
 	//	var adRequest = new AdRequest();
 	//	adRequest.Keywords.Add("unity-admob-sample");
@@ -70,12 +70,12 @@ public class GoogleAdsManager : MonoBehaviour
 	//		{
 	//			if (error != null || ad == null)
 	//			{
-	//				Debug.LogError("Rewarded ad failed to load an ad " +
+	//				aError("Rewarded ad failed to load an ad " +
 	//							   "with error : " + error);
 	//				return;
 	//			}
 
-	//			Debug.Log("Rewarded ad loaded with response : "
+	//			a("Rewarded ad loaded with response : "
 	//					  + ad.GetResponseInfo());
 
 	//			rewardedAd = ad;
@@ -94,7 +94,7 @@ public class GoogleAdsManager : MonoBehaviour
 	//			// TODO: Reward the user.
 	//			PFManager.instance.OnWatchingAdFinished();
 	//			LoadRewardedAd();
-	//			Debug.Log(String.Format(rewardMsg, reward.Type, reward.Amount));
+	//			a(String.Format(rewardMsg, reward.Type, reward.Amount));
 	//		});
 	//	}
 	//}
@@ -104,34 +104,34 @@ public class GoogleAdsManager : MonoBehaviour
 	//	// Raised when the ad is estimated to have earned money.
 	//	ad.OnAdPaid += (AdValue adValue) =>
 	//	{
-	//		Debug.Log(String.Format("Rewarded ad paid {0} {1}.",
+	//		a(String.Format("Rewarded ad paid {0} {1}.",
 	//			adValue.Value,
 	//			adValue.CurrencyCode));
 	//	};
 	//	// Raised when an impression is recorded for an ad.
 	//	ad.OnAdImpressionRecorded += () =>
 	//	{
-	//		Debug.Log("Rewarded ad recorded an impression.");
+	//		a("Rewarded ad recorded an impression.");
 	//	};
 	//	// Raised when a click is recorded for an ad.
 	//	ad.OnAdClicked += () =>
 	//	{
-	//		Debug.Log("Rewarded ad was clicked.");
+	//		a("Rewarded ad was clicked.");
 	//	};
 	//	// Raised when an ad opened full screen content.
 	//	ad.OnAdFullScreenContentOpened += () =>
 	//	{
-	//		Debug.Log("Rewarded ad full screen content opened.");
+	//		a("Rewarded ad full screen content opened.");
 	//	};
 	//	// Raised when the ad closed full screen content.
 	//	ad.OnAdFullScreenContentClosed += () =>
 	//	{
-	//		Debug.Log("Rewarded ad full screen content closed.");
+	//		a("Rewarded ad full screen content closed.");
 	//	};
 	//	// Raised when the ad failed to open full screen content.
 	//	ad.OnAdFullScreenContentFailed += (AdError error) =>
 	//	{
-	//		Debug.LogError("Rewarded ad failed to open full screen content " +
+	//		aError("Rewarded ad failed to open full screen content " +
 	//					   "with error : " + error);
 	//	};
 	//}
@@ -142,7 +142,7 @@ public class GoogleAdsManager : MonoBehaviour
 	//	ad.OnAdFullScreenContentClosed += LoadRewardedAd;
 
 	//{
-	//		Debug.Log("Rewarded Ad full screen content closed.");
+	//		a("Rewarded Ad full screen content closed.");
 
 	//		// Reload the ad so that we can show another as soon as possible.
 	//		LoadRewardedAd();
@@ -150,7 +150,7 @@ public class GoogleAdsManager : MonoBehaviour
 	//	// Raised when the ad failed to open full screen content.
 	//	ad.OnAdFullScreenContentFailed += (AdError error) =>
 	//	{
-	//		Debug.LogError("Rewarded ad failed to open full screen content " +
+	//		aError("Rewarded ad failed to open full screen content " +
 	//					   "with error : " + error);
 
 	//		// Reload the ad so that we can show another as soon as possible.

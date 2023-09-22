@@ -77,7 +77,6 @@ public class YoutubeManager : MonoBehaviour
 						{
 							if(task2.IsCompleted)
 							{
-								Debug.Log("Video no longer take responses");
 							}
 						});
 					}
@@ -99,7 +98,6 @@ public class YoutubeManager : MonoBehaviour
 		// Call the Cloud Script function
 		PlayFabClientAPI.ExecuteCloudScript(request, result =>
 		{
-			Debug.Log(result.FunctionResult);
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			PlayerDataManager.Instance.playerData.PurchasedChances = _playerData.PurchasedChances;
 			int Chances = PlayerDataManager.Instance.playerData.PurchasedChances;
@@ -116,7 +114,6 @@ public class YoutubeManager : MonoBehaviour
 		}, error =>
 		{
 			// Handle error response
-			Debug.LogError("Cloud Script Error: " + error.ErrorMessage);
 		});
 		
 
@@ -162,7 +159,6 @@ public class YoutubeManager : MonoBehaviour
 					loadImage(video.transform.GetChild(0).GetComponent<RawImage>(), document.GetValue<string>("Filename"), document.GetValue<string>("Title"), video.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>());
 					videoList.Add(youtubeVideo);
 					video.GetComponent<LinkOpener>().UpdateVideo(youtubeVideo);
-					Debug.Log("Added to list");
 				}
 			}
 		});
@@ -178,7 +174,7 @@ public class YoutubeManager : MonoBehaviour
 			{
 				if (task.IsFaulted || task.IsCanceled)
 				{
-					Debug.Log(task.Exception.ToString());
+
 				}
 				else
 				{

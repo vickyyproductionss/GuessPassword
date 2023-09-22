@@ -41,11 +41,11 @@ public class DigitSelectorManager : MonoBehaviour
 			IPManager.instance.OnLockerTypeChanged(ActiveChest._lockerDigits);
 			PFManager.instance.ActiveLockerDigits = ActiveChest._lockerDigits;
 			PFManager.instance.ActiveChest = ActiveChest;
+			DigitRevealManager.Instance.CheckPurchasedDigits();
 			PFManager.instance.GetTotalChancesForToday();
 			PFManager.instance.GetTotalFailedAttempts();
 			PlayerPrefs.SetInt("DefaultsSet", 1);
 			PlayerPrefs.SetString("DefaultChest", ActiveChest._lockerDigits.ToString());
-			Debug.Log($"Default chest type is now : {ActiveChest._lockerDigits.ToString()}");
 		}
         else
         {
@@ -151,7 +151,6 @@ public class DigitSelectorManager : MonoBehaviour
 		{
 			ID = PFManager.instance.SixDigitLockerID;
 		}
-        Debug.Log($"{ID} is passed from you side");
 		CollectionReference lockerRef = FirebaseFirestore.DefaultInstance.Collection("Lockers").Document(ID).Collection("Attempts");
 		lockerRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
 		{
