@@ -360,6 +360,7 @@ public class PFManager : MonoBehaviour
 			SixDigitLockerID = lockerData.LockerID;
 			Debug.Log("Cloud Script Success!");
 			GetTotalChancesForToday();
+			DigitRevealManager.Instance.CheckPurchasedDigits();
 		}, error =>
 		{
 			// Handle error response
@@ -557,7 +558,7 @@ public class PFManager : MonoBehaviour
 			}
 		}
 		GetCurrentLockerID();
-		DigitRevealManager.Instance.ShowPricing();
+		DigitRevealManager.Instance.CheckPurchasedDigits();
 		PlayerDataManager.Instance.FetchLatestData();
 	}
 
