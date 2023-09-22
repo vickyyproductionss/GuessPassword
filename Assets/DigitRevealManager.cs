@@ -29,7 +29,9 @@ public class DigitRevealManager : MonoBehaviour
 		}
 		PricingForRevealText.gameObject.SetActive(true);
 		int priceToReveal = digitCountToreveal * 5;
-		PricingForRevealText.text = $"Reveal first {digitCountToreveal} in INR {priceToReveal.ToString()}";
+		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits in INR {priceToReveal.ToString()}";
+		PricingForRevealText.fontStyle = FontStyles.Normal;
+		PricingForRevealText.fontStyle = FontStyles.Underline;
 	}
 	public void CheckAmountBeforeRevealing()
 	{
@@ -37,17 +39,17 @@ public class DigitRevealManager : MonoBehaviour
 	}
 	void OnPaymentDataRecieved(int amount)
 	{
-		//string lockerid = PFManager.instance.GetActiveLockerID();
-		//int lockerdigits = (PFManager.instance.ActiveChest.TotalPossiblePasswords/3).ToString().Length;
-		//int priceToReveal = (lockerdigits - 3) * 5;
-		//if(amount >= priceToReveal)
-		//{
-		//	RevealDigitsForThisLocker(lockerid, lockerdigits);
-		//}
-		//else
-		//{
-		//	AddFundsWindow.SetActive(true);
-		//}
+		string lockerid = PFManager.instance.GetActiveLockerID();
+		int lockerdigits = (PFManager.instance.ActiveChest.TotalPossiblePasswords / 3).ToString().Length;
+		int priceToReveal = (lockerdigits - 3) * 5;
+		if (amount >= priceToReveal)
+		{
+			RevealDigitsForThisLocker(lockerid, lockerdigits);
+		}
+		else
+		{
+			AddFundsWindow.SetActive(true);
+		}
 	}
 	public void RevealDigitsForThisLocker(string lockerID,int digitCount)
 	{
@@ -64,9 +66,9 @@ public class DigitRevealManager : MonoBehaviour
 			PlayFabClientAPI.ExecuteCloudScript(request, result =>
 			{
 				Debug.Log(result.FunctionResult + "Is the result we got");
-				//PricingForRevealText.text = "Revealed digits are: " + result.FunctionResult;
-				//PricingForRevealText.GetComponent<Button>().interactable = false;
-				//PricingForRevealText.fontStyle = FontStyles.UpperCase;
+				PricingForRevealText.text = "Revealed digits are: " + result.FunctionResult;
+				PricingForRevealText.GetComponent<Button>().interactable = false;
+				PricingForRevealText.fontStyle = FontStyles.UpperCase;
 
 			}, error =>
 			{
