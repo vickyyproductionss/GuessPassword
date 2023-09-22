@@ -14,7 +14,7 @@ public class StatsManager : MonoBehaviour
 	private void Start()
 	{
 		Title.text = "Win amount";
-		Value.text = PlayerDataManager.Instance.playerData.Amount.ToString();
+		Value.text = PlayerDataManager.WalletBalance.ToString();
 	}
 	public void NextStat()
 	{
@@ -40,7 +40,7 @@ public class StatsManager : MonoBehaviour
 		{
 			WithdrawBtnGrp.SetActive(true);
 			Title.text = "Win amount";
-			Value.text = PlayerDataManager.Instance.playerData.Amount.ToString();
+			Value.text = PlayerDataManager.WalletBalance.ToString();
 		}
 
 	}
@@ -56,7 +56,7 @@ public class StatsManager : MonoBehaviour
 		{
 			WithdrawBtnGrp.SetActive(true);
 			Title.text = "Win amount";
-			Value.text = PlayerDataManager.Instance.playerData.Amount.ToString();
+			Value.text = PlayerDataManager.WalletBalance.ToString();
 		}
 		else if (Title.text == "Total Lockers Unlocked")
 		{
