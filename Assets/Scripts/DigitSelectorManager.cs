@@ -44,6 +44,7 @@ public class DigitSelectorManager : MonoBehaviour
 			DigitRevealManager.Instance.CheckPurchasedDigits();
 			PFManager.instance.GetTotalChancesForToday();
 			PFManager.instance.GetTotalFailedAttempts();
+            PFManager.instance.StartListeningForWrongPasswordsOnCurrentLocker();
 			PlayerPrefs.SetInt("DefaultsSet", 1);
 			PlayerPrefs.SetString("DefaultChest", ActiveChest._lockerDigits.ToString());
 		}

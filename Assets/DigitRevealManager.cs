@@ -11,16 +11,18 @@ using UnityEngine.UI;
 
 public class DigitRevealManager : MonoBehaviour
 {
-	[SerializeField] TMP_Text PricingForRevealText;
-	[SerializeField] GameObject AddFundsWindow;
+	[SerializeField] TMP_Text PricingForRevealText,PricingTextOnPopup,WinningChancesText;
+	[SerializeField] GameObject AddFundsWindow,PurchaseButton;
 	public delegate void PaymentCallback(int amount);
 	public static DigitRevealManager Instance;
+	public int RevealedDigits = 0;
 	private void Awake()
 	{
 		Instance = this;
 	}
 	public void CheckPurchasedDigits()
 	{
+		RevealedDigits = 0;
 		FirebaseFirestore.DefaultInstance.Collection("users").Document(SystemInfo.deviceUniqueIdentifier).Collection("RevealedDigits").GetSnapshotAsync().ContinueWithOnMainThread(task =>
 		{
 			if(task.IsCompleted)
@@ -32,6 +34,7 @@ public class DigitRevealManager : MonoBehaviour
 					if(item.GetValue<string>("LockerID") == PFManager.instance.GetActiveLockerID())
 					{
 						PricingForRevealText.text = "Password starts with: " + item.GetValue<string>("Digits");
+						RevealedDigits = item.GetValue<string>("Digits").Length;
 						PricingForRevealText.GetComponent<Button>().interactable = false;
 						PricingForRevealText.fontStyle = FontStyles.Normal;
 						PricingForRevealText.fontStyle = FontStyles.Bold;
@@ -50,10 +53,42 @@ public class DigitRevealManager : MonoBehaviour
 		}
 		PricingForRevealText.gameObject.SetActive(true);
 		int priceToReveal = digitCountToreveal * 10;
-		PricingForRevealText.text = $"Reveal first {digitCountToreveal} digits for INR {priceToReveal.ToString()}";
+		PricingForRevealText.text = $"Reveal digits & increase winning chances by 99%";
 		PricingForRevealText.GetComponent<Button>().interactable = true;
 		PricingForRevealText.fontStyle = FontStyles.Normal;
 		PricingForRevealText.fontStyle = FontStyles.Underline;
+	}
+	public void ShowPricingOnPopup()
+	{
+		if(RevealedDigits == 0)
+		{
+			PurchaseButton.GetComponent<Button>().interactable = true;
+			int digitCountToreveal = (PFManager.instance.ActiveChest.TotalPossiblePasswords / 3).ToString().Length - 3;
+			PricingForRevealText.gameObject.SetActive(true);
+			int priceToReveal = digitCountToreveal * 10;
+			PricingTextOnPopup.text = $"Reveal {digitCountToreveal} Digits for {priceToReveal} INR";
+			float percentage = 0;
+			if (digitCountToreveal == 1)
+			{
+				percentage = 88.88f;
+			}
+			else if (digitCountToreveal == 2)
+			{
+				percentage = 98.88f;
+			}
+			else if (digitCountToreveal == 3)
+			{
+				percentage = 99.88f;
+			}
+			WinningChancesText.text = $"Winning percent = {percentage} %";
+		}
+		else
+		{
+			PurchaseButton.GetComponent<Button>().interactable = false;
+			PricingTextOnPopup.text = "";
+			WinningChancesText.text = "Already Revealed\n Try for another locker.";
+		}
+		
 	}
 	public void CheckAmountBeforeRevealing()
 	{
@@ -108,7 +143,7 @@ public class DigitRevealManager : MonoBehaviour
 			{
 				PricingForRevealText.text = "Password starts with: " + digits;
 				PricingForRevealText.GetComponent<Button>().interactable = false;
-				PricingForRevealText.fontStyle = FontStyles.UpperCase;
+				PFManager.instance.UpdateWinningChancesForThisLocker();
 			}
 		});
 	}
