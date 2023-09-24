@@ -993,13 +993,29 @@ public class PFManager : MonoBehaviour
 	#endregion
 
 	#region Listen For Firestore Changes
+	bool ListeningLiveForChanges;
 	public void StartListeningForWrongPasswordsOnCurrentLocker()
 	{
+		StartCoroutine(InitialiseLiveListeningForChanges());
 		//If Other player entered a wrong password
 		CollectionReference lockerRef = FirebaseFirestore.DefaultInstance.Collection("Lockers").Document(GetActiveLockerID()).Collection("Attempts");
+		if(string.IsNullOrEmpty(GetActiveLockerID()))
+		{
+			ListeningLiveForChanges = false;
+			return;
+		}
+		ListeningLiveForChanges = true;
 		ListenerRegistration listener = lockerRef.Listen(snapshot => {
 			WrongPasswordEntered(snapshot.Count);
 		});
+	}
+	IEnumerator InitialiseLiveListeningForChanges()
+	{
+		yield return new WaitForSeconds(1);
+		if(!ListeningLiveForChanges)
+		{
+			StartListeningForWrongPasswordsOnCurrentLocker();
+		}
 	}
 	void WrongPasswordEntered(int passwordsCount)
 	{
