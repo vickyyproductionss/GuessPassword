@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using VickyCustoms;
 using static PlayerDataManager;
 using System;
+using UnityEditor.Search;
 
 namespace VickyCustoms
 {
@@ -349,6 +350,7 @@ public class PFManager : MonoBehaviour
 			SixDigitLockerID = lockerData.LockerID;
 			GetTotalChancesForToday();
 			DigitRevealManager.Instance.CheckPurchasedDigits();
+			StartListeningForWrongPasswordsOnCurrentLocker();
 		}, error =>
 		{
 			// Handle error response
@@ -357,9 +359,15 @@ public class PFManager : MonoBehaviour
 
 	}
 
-	void UpdateWinningChancesForThisLocker()
+	public void UpdateWinningChancesForThisLocker()
 	{
+		int RevealedDigits = DigitRevealManager.Instance.RevealedDigits;
+		if(RevealedDigits != 0)
+		{
+			RevealedDigits = ActiveChest.TotalPossiblePasswords - 1000;
+		}
 		float totalFailedAttempts = TotalFailedAttemptsForCurrentLocker;
+		totalFailedAttempts += RevealedDigits;
 		float totalChancesForLocker = ActiveChest.TotalPossiblePasswords;
 		float winningPercentage = (totalFailedAttempts / totalChancesForLocker) * 100;
 		string WinChanceInfo = $"Winning chances {winningPercentage.ToString("F3")} %";
@@ -419,13 +427,8 @@ public class PFManager : MonoBehaviour
 				int totalAttempts = snapshot.Count;
 				TotalFailedAttemptsForCurrentLocker = totalAttempts;
 				UpdateWinningChancesForThisLocker();
-				FailedAttempText.text = totalAttempts.ToString() + " Incorrect Passwords";
-				float prizeMoney = (ActiveChest.StartingPrize + totalAttempts * 0.013f);
-				if (prizeMoney > ActiveChest.MaximumPrize)
-				{
-					prizeMoney = ActiveChest.MaximumPrize;
-				}
-				TotalAmountInLockerText.text = "Unlock and get INR " + prizeMoney.ToString();
+				WrongPasswordEntered(totalAttempts);
+				UpdatePrizeMoney(totalAttempts);
 			}
 		});
 		Locker_IDText.text = GetActiveLockerID();
@@ -987,6 +990,33 @@ public class PFManager : MonoBehaviour
 		}
 	}
 
+	#endregion
+
+	#region Listen For Firestore Changes
+	public void StartListeningForWrongPasswordsOnCurrentLocker()
+	{
+		//If Other player entered a wrong password
+		CollectionReference lockerRef = FirebaseFirestore.DefaultInstance.Collection("Lockers").Document(GetActiveLockerID()).Collection("Attempts");
+		ListenerRegistration listener = lockerRef.Listen(snapshot => {
+			WrongPasswordEntered(snapshot.Count);
+		});
+	}
+	void WrongPasswordEntered(int passwordsCount)
+	{
+		TotalFailedAttemptsForCurrentLocker = passwordsCount;
+		UpdateWinningChancesForThisLocker();
+		UpdatePrizeMoney(passwordsCount);
+		FailedAttempText.text = passwordsCount.ToString() + " Incorrect Passwords";
+	}
+	void UpdatePrizeMoney(int totalAttempts)
+	{
+		float prizeMoney = (ActiveChest.StartingPrize + totalAttempts * 0.013f);
+		if (prizeMoney > ActiveChest.MaximumPrize)
+		{
+			prizeMoney = ActiveChest.MaximumPrize;
+		}
+		TotalAmountInLockerText.text = "Unlock and get INR " + prizeMoney.ToString();
+	}
 	#endregion
 }
 //
