@@ -158,8 +158,44 @@ public class PaymentHandler : MonoBehaviour
 			}
 		});
 	}
-    public void AddMoneyToWallet()
+
+	#region Handle Native Side Payment
+	// Android package name and class name of the activity you want to launch
+	private string packageName = "com.VGames.GuessThePassword"; // Replace with your Android app's package name
+	private string className = "com.VGames.GuessThePassword.MainActivity"; // Replace with the full path to your Android activity
+
+	// Function to launch the Android activity
+	public void LaunchAndroidActivity()
+	{
+		try
+		{
+			// Create an AndroidJavaObject for the Intent class
+			AndroidJavaObject intentObject = new AndroidJavaObject("android.content.Intent");
+
+			// Set the action for the intent (launching an activity)
+			intentObject.Call<AndroidJavaObject>("setAction", "android.intent.action.MAIN");
+
+			// Set the package and class name of the target activity
+			AndroidJavaObject component = new AndroidJavaClass("android.content.ComponentName");
+			component = new AndroidJavaObject("android.content.ComponentName", packageName, className);
+			intentObject.Call<AndroidJavaObject>("setComponent", component);
+
+			// Get the current Unity activity
+			AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+			AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+
+			// Start the Android activity
+			currentActivity.Call("startActivity", intentObject);
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogError("Error launching Android activity: " + e.Message);
+		}
+	}
+	public void AddMoneyToWallet()
     {
-        Application.OpenURL("https://guessthepassword.web.app/?info=" + PlayerPrefs.GetString("PF_ID"));
-    }
+		LaunchAndroidActivity();
+		//Application.OpenURL("https://guessthepassword.web.app/?info=" + PlayerPrefs.GetString("PF_ID"));
+	}
+	#endregion
 }
