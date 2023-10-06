@@ -12,6 +12,7 @@ using System;
 public class PaymentHandler : MonoBehaviour
 {
     [SerializeField] TMP_Text AmountInWalletText;
+    [SerializeField] TMP_Text AmountRecievedTest;
 	[SerializeField] GameObject AddFundsWindow;
     public static int amountInWallet = 0;
 	public FirebaseFirestore firestore;
@@ -30,6 +31,38 @@ public class PaymentHandler : MonoBehaviour
 	{
         firestore = FirebaseFirestore.DefaultInstance;
 		instance = this;
+		checkPaymentRecieved();
+
+	}
+	void checkPaymentRecieved()
+	{
+		// Check if this is running on an Android device
+		if (Application.platform == RuntimePlatform.Android)
+		{
+			//Access the Unity activity's intent
+			AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+			AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+			AndroidJavaObject intent = currentActivity.Call<AndroidJavaObject>("getIntent");
+
+			// Retrieve the data using the key specified in MainActivity
+			string receivedData = intent.Call<string>("getStringExtra", "amount");
+			UpdateAmountInWallet(int.Parse(receivedData));
+			intent.Call("removeExtra", "amount");
+		}
+	}
+	void UpdateAmountInWallet(int amountInWallet)
+	{
+		CollectionReference PaymentsRef = firestore.Collection("PaymentRequests");
+		Dictionary<string, object> request = new Dictionary<string, object>()
+		{
+			{"Amount",amountInWallet.ToString()},
+			{"PlayerID",PlayerPrefs.GetString("PF_ID")}
+		};
+		PaymentsRef.Document(PlayerPrefs.GetString("PF_ID")).SetAsync(request).ContinueWithOnMainThread(task =>
+		{
+			PFManager.instance.ShowMessage("Success", "Money added to wallet", "Success");
+			FetchLatestAmount();
+		});
 	}
 
 	public void PurchaseForPrice(int price)

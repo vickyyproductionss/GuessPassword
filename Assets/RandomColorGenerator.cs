@@ -12,7 +12,16 @@ public class RandomColorGenerator : MonoBehaviour
 
 	private void Start()
 	{
-		//StartCoroutine(Changecolors());
+		colors = new Color[3566952];
+		for(int i = 0; i < colors.Length; i++)
+		{
+			colors[i] = Color.black;
+		}
+		//Invoke(nameof(startRoutineLate), 3);
+	}
+	void startRoutineLate()
+	{
+		StartCoroutine(Changecolors());
 	}
 	[SerializeField] bool Stillenerate;
 	IEnumerator Changecolors()
@@ -24,7 +33,7 @@ public class RandomColorGenerator : MonoBehaviour
 			StartCoroutine(Changecolors());
 		}
 	}
-	[SerializeField] Color[] colors = new Color[Screen.width * Screen.height];
+	Color[] colors = new Color[3566952];
 	int index = 0;
 	void GenerateImage()
 	{
@@ -52,7 +61,7 @@ public class RandomColorGenerator : MonoBehaviour
 		//	}
 		//	index++;
 		//}
-		index = Random.Range(0,Screen.width*Screen.height);
+		index = Random.Range(0,(Screen.width*Screen.height) - 1);
 		float random1 = Random.value;
 		float random2 = Random.value;
 		float random3 = Random.value;
@@ -62,7 +71,7 @@ public class RandomColorGenerator : MonoBehaviour
 		Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 		this.GetComponent<Image>().sprite = sprite;
 	}
-	private void Update()
+	private void LateUpdate()
 	{
 		GenerateImage();
 		if (Input.touchCount > 0)

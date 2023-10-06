@@ -14398,6 +14398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   AmountInWalletText: {fileID: 953063623}
+  AmountRecievedTest: {fileID: 1615607099}
   AddFundsWindow: {fileID: 213410802}
   items:
   - price: 2
