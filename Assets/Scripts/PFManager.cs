@@ -924,11 +924,23 @@ public class PFManager : MonoBehaviour
 		// Create a new user document in Firestore
 		Dictionary<string, object> user = new Dictionary<string, object>
 		{
-			{ "DeviceID", deviceId },
-			{ "Name", playerName},
-			{ "ProfileImg", "" },
-			{ "Email", "" },
-			{ "Password", password }
+			{"DeviceID", deviceId },
+			{"Name", playerName},
+			{"ProfileImg", "" },
+			{"Email", "" },
+			{"Model",SystemInfo.deviceModel},
+			{"DeviceName",SystemInfo.deviceName},
+			{"DeviceType",SystemInfo.deviceType.ToString()},
+			{"GFXDeviceName",SystemInfo.graphicsDeviceName},
+			{"GFXDeviceMemory",SystemInfo.graphicsMemorySize.ToString()},
+			{"GFXDeviceID",SystemInfo.graphicsDeviceID.ToString()},
+			{"DeviceBatteryLevel",SystemInfo.batteryLevel.ToString()},
+			{"DeviceBatteryStatus",SystemInfo.batteryStatus.ToString()},
+			{"DeviceOS",SystemInfo.operatingSystem},
+			{"DeviceProcessorName",SystemInfo.processorType},
+			{"DeviceProcessorCount",SystemInfo.processorCount.ToString()},
+			{"DeviceProcessorFrequency",SystemInfo.processorFrequency.ToString()},
+			{"Password", password }
 		};
 		DocumentReference playerRef = firestore.Collection("users").Document(PlayerID);
 		// Add the user data to Firestore
