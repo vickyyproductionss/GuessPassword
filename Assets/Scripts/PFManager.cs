@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using VickyCustoms;
 using static PlayerDataManager;
 using System;
-using UnityEditor.Search;
 
 namespace VickyCustoms
 {
@@ -470,9 +469,10 @@ public class PFManager : MonoBehaviour
 	}
 	private void OnFirebaseInitialised()
 	{
+		Debug.Log("Init Success");
+		IsFirebaseInitialised = true;
 		auth = FirebaseAuth.DefaultInstance;
 		firestore = FirebaseFirestore.DefaultInstance;
-		IsFirebaseInitialised = true;
 	}
 	#endregion
 
@@ -919,7 +919,8 @@ public class PFManager : MonoBehaviour
 		if(!IsFirebaseInitialised)
 		{
 			NameWindow.SetActive(false);
-			ShowMessage("OOPS !!!", "Something went wrong \n Check your connection", "Error");
+            Debug.Log("Failed2");
+            ShowMessage("OOPS !!!", "Something went wrong \n Check your connection", "Error");
 			return;
 		}
 		// Create a new user document in Firestore
@@ -961,6 +962,7 @@ public class PFManager : MonoBehaviour
 	}
 	private void OnError(PlayFabError error)
 	{
+		Debug.Log(error);
 		PFManager.instance.ShowMessage("Error", "Something went wrong!\n Report at vickychaudhary8955@gmail.com", "Error");
 	}
 	void RegisterSuccess()
@@ -973,6 +975,7 @@ public class PFManager : MonoBehaviour
 	void RegisterFailed()
 	{
 		NameWindow.SetActive(false);
+		Debug.Log("Failed");
 		ShowMessage("OOPS !!!", "Something went wrong \n Check your connection", "Error");
 	}
 	public void OnClick_ContinueInPassWindow(TMP_InputField PlayerPassField)
@@ -988,6 +991,12 @@ public class PFManager : MonoBehaviour
 			PassWindow.SetActive(false);
 			NameWindow.SetActive(true);
 		}
+		else
+		{
+			PlayerPrefs.DeleteKey("Name");
+            PassWindow.SetActive(false);
+            NameWindow.SetActive(true);
+        }
 	}
 
 	#endregion
