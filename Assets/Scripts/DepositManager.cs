@@ -47,12 +47,13 @@ public class DepositManager : MonoBehaviour
     }
     public void CreatePaymentLink()
     {
+        PayButton.interactable = false;
         int amount = int.Parse(AmountInput.text);
         string customerName = PlayerPrefs.GetString("PName", "GuessThePassword_Player");
         string customerEmail = PlayerPrefs.GetString("Email", "");
         string customerPhone = PlayerPrefs.GetString("Phone", "");
         string description = "GTP Wallet";
-        string userID = SystemInfo.deviceUniqueIdentifier;
+        string userID = PlayerPrefs.GetString("PF_ID");
         string URLWithData = baseURL + $"?amount={amount}&customerName={customerName}&customerEmail={customerEmail}&customerContact={customerPhone}&description={description}&userid={userID}";
         StartCoroutine(GetPaymentLink(URLWithData));
     }
@@ -90,9 +91,9 @@ public class DepositManager : MonoBehaviour
     // Function where you can use the payment link
     private void HandlePaymentLink(string paymentLink)
     {
+        sampleWebView.gameObject.SetActive(true);
         sampleWebView.enabled = true;
         sampleWebView.Url = paymentLink;
-        Debug.Log("Handling the payment link: " + paymentLink);
     }
 
     public void CloseWebView()

@@ -252,7 +252,6 @@ public class PFManager : MonoBehaviour
 		{
 			GetTotalFailedAttempts();
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
-			FreeChancesText.text = _playerData.PurchasedChances.ToString() + " Free Chances";
 
 		}, error =>
 		{
@@ -479,41 +478,49 @@ public class PFManager : MonoBehaviour
 	#region Core Mechanics
 	public void CheckMyPassword()
 	{
-		var request = new ExecuteCloudScriptRequest
-		{
-			FunctionName = "getPlayerData",
-			FunctionParameter = new { PlayerID = PlayerPrefs.GetString("PF_ID") },
-			GeneratePlayStreamEvent = true
-		};
-
-		// Call the Cloud Script function
-		PlayFabClientAPI.ExecuteCloudScript(request, result =>
-		{
-			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
-			PlayerDataManager.Instance.playerData.PurchasedChances = _playerData.PurchasedChances;
-			int Chances = PlayerDataManager.Instance.playerData.PurchasedChances;
-			if (Chances <= 0)
-			{
-				FreeChancesText.text = "No Free Chances Today";
-				AskForAdsWindow.SetActive(true);
-				return;
-			}
-			else if (Chances > 0)
-			{
-				FreeChancesText.text = Chances.ToString() + " Free Chances";
-				MatchMyPassword(ActiveLockerDigits.ToString(), IPManager.instance.Password);
-			}
-		}, error =>
-		{
-			// Handle error response
-			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
-		});
-	}
+        int Chances = PaymentHandler.chancedPurchased;
+        if (Chances <= 0)
+        {
+            FreeChancesText.text = "No Free Chances Left";
+            AskForAdsWindow.SetActive(true);
+            return;
+        }
+        else if (Chances > 0)
+        {
+            FreeChancesText.text = Chances.ToString() + " Free Chances";
+            MatchMyPassword(ActiveLockerDigits.ToString(), IPManager.instance.Password);
+        }
+    }
 	private void MatchMyPassword(string key, string value)
 	{
 		if(!string.IsNullOrEmpty(value))
 		{
-			float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
+            CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("PasswordTries");
+
+            // Create a new document in "Purchases" collection with the fields price and chances
+            Dictionary<string, object> PasswordData = new Dictionary<string, object>
+            {
+				{ "Type", key},
+				{ "password", value },
+			};
+
+            // Add a new purchase document
+            chancesRef
+				.AddAsync(PasswordData)
+				.ContinueWithOnMainThread(task =>
+				{
+					if (task.IsCompleted && !task.IsFaulted)
+					{
+						//Succeeded
+						PaymentHandler.instance.DeductAChance();
+					}
+					else
+					{
+						//Failed
+						return;
+					}
+            });
+            float prizeMoney = (ActiveChest.StartingPrize + TotalFailedAttemptsForCurrentLocker * 0.013f);
 			if (prizeMoney > ActiveChest.MaximumPrize)
 			{
 				prizeMoney = ActiveChest.MaximumPrize;
@@ -958,8 +965,9 @@ public class PFManager : MonoBehaviour
 	}
 	private void OnDisplayNameUpdated(UpdateUserTitleDisplayNameResult result)
 	{
-
-	}
+		NameWindow.SetActive(false);
+        PFManager.instance.ShowMessage("Message", "Name Changed Successfully", "Success");
+    }
 	private void OnError(PlayFabError error)
 	{
 		Debug.Log(error);

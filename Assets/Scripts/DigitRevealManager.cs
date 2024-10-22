@@ -101,7 +101,8 @@ public class DigitRevealManager : MonoBehaviour
 		int priceToReveal = (lockerdigits - 3) * 10;
 		if (amount >= priceToReveal)
 		{
-			RevealDigitsForThisLocker(lockerid, lockerdigits);
+            PaymentHandler.instance.PurchaseForDigits(priceToReveal);
+            RevealDigitsForThisLocker(lockerid, lockerdigits);
 		}
 		else
 		{
@@ -111,7 +112,7 @@ public class DigitRevealManager : MonoBehaviour
 	public void RevealDigitsForThisLocker(string lockerID,int digitCount)
 	{
 		int digitCountToreveal = digitCount - 3;
-
+		
 		if(digitCountToreveal > 0)
 		{
 			var request = new ExecuteCloudScriptRequest
@@ -149,45 +150,6 @@ public class DigitRevealManager : MonoBehaviour
 	}
 	public void GetAmountInWallet(PaymentCallback callback)
 	{
-		CollectionReference PaymentsRef = FirebaseFirestore.DefaultInstance.Collection("PaymentRequests");
-		PaymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
-		{
-			if (task.IsCompleted)
-			{
-				QuerySnapshot snapshot = task.Result;
-				if (snapshot != null)
-				{
-					int amountInWallet = 0;
-					foreach (var doc in snapshot.Documents)
-					{
-						if (doc.GetValue<string>("PlayerID") == PlayerPrefs.GetString("PF_ID"))
-						{
-							int amt = int.Parse(doc.GetValue<string>("Amount"));
-							amountInWallet += amt;
-						}
-					}
-
-					var request = new ExecuteCloudScriptRequest
-					{
-						FunctionName = "getPlayerData",
-						FunctionParameter = new { PlayerID = PlayerPrefs.GetString("PF_ID") },
-						GeneratePlayStreamEvent = true
-					};
-
-					// Call the Cloud Script function
-					PlayFabClientAPI.ExecuteCloudScript(request, result =>
-					{
-						PlayerDataManager.PlayerData _playerData = JsonConvert.DeserializeObject<PlayerDataManager.PlayerData>(result.FunctionResult.ToString());
-						amountInWallet += _playerData.Amount;
-						amountInWallet += _playerData.SpentAmount;
-						callback(amountInWallet);
-					}, error =>
-					{
-						// Handle error response
-						PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
-					});
-				}
-			}
-		});
+		callback.Invoke(PaymentHandler.amountInWallet);
 	}
 }

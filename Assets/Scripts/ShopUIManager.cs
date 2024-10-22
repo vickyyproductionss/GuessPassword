@@ -16,9 +16,5 @@ public class ShopUIManager : MonoBehaviour
 		{
 			CashInWalletChild.text = CashInWalletParent.text;
 		}
-		if(WinningChild.text != WinningParent.text)
-		{
-			WinningChild.text = WinningParent.text;
-		}
 	}
 }

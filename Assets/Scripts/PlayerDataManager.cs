@@ -45,7 +45,7 @@ public class PlayerDataManager : MonoBehaviour
 			PlayerData _playerData = JsonConvert.DeserializeObject<PlayerData>(result.FunctionResult.ToString());
 			playerData = _playerData;
 			OnDataRecieved(playerData);
-			PaymentHandler.instance.FetchLatestAmount();
+			//Call function to fetch latest data
 		}, error =>
 		{
 			// Handle error response

@@ -29,13 +29,20 @@ public class SampleWebView : MonoBehaviour
 {
     public string Url;
     public Text status;
-    WebViewObject webViewObject;
+    public Font ButtonFont;
+    public WebViewObject webViewObject;
 
-    IEnumerator Start()
+    void OnEnable()
     {
+        StartCoroutine(SetView());
+    }
+
+    IEnumerator SetView()
+    {
+        yield return new WaitForEndOfFrame();
         //Screen.orientation = ScreenOrientation.Portrait;
         webViewObject = (new GameObject("WebViewObject")).AddComponent<WebViewObject>();
-
+        PaymentListner.Instance.PaymentStatusPanel.SetActive(true);
 #if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
         webViewObject.canvas = GameObject.Find("Canvas");
 #endif
@@ -158,7 +165,7 @@ public class SampleWebView : MonoBehaviour
 
         //webViewObject.SetScrollbarsVisibility(true);
 
-        webViewObject.SetMargins(0, 0, 0, 0);
+        webViewObject.SetMargins(0, 175, 0, 0);
         webViewObject.SetTextZoom(100);  // android only. cf. https://stackoverflow.com/questions/21647641/android-webview-set-font-size-system-default/47017410#47017410
         //webViewObject.SetMixedContentMode(2);  // android only. 0: MIXED_CONTENT_ALWAYS_ALLOW, 1: MIXED_CONTENT_NEVER_ALLOW, 2: MIXED_CONTENT_COMPATIBILITY_MODE
         webViewObject.SetVisibility(true);
@@ -210,58 +217,77 @@ public class SampleWebView : MonoBehaviour
 
     void OnGUI()
     {
-        var x = 10;
+        float buttonWidth = Screen.width * 0.15f;  // 15% of the screen width
+        float buttonHeight = Screen.height * 0.04f; // 8% of the screen height
 
-        GUI.enabled = (webViewObject == null) ? false : webViewObject.CanGoBack();
-        if (GUI.Button(new Rect(x, 10, 80, 80), "<")) {
-            webViewObject?.GoBack();
+        // Set padding from the top and left edges
+        float paddingX = Screen.width * 0.02f;  // 2% padding from the left
+        float paddingY = Screen.height * 0.02f; // 2% padding from the top
+
+        // Define the rectangle for the button (top-left corner)
+        Rect buttonRect = new Rect(paddingX, paddingY, buttonWidth, buttonHeight);
+
+        // Customize button style
+        GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+
+        // Set the background color to white to blend with the background
+        buttonStyle.normal.background = Texture2D.whiteTexture;
+        buttonStyle.hover.background = Texture2D.whiteTexture;
+        buttonStyle.active.background = Texture2D.whiteTexture;
+
+
+        buttonStyle.fontSize = (int)(Screen.height * 0.03f); // Make the text scale based on screen size
+        buttonStyle.normal.textColor = Color.black; // Set the text color to black
+        buttonStyle.hover.textColor = Color.black; // Set the text color to black
+        buttonStyle.font = ButtonFont;
+
+        // Remove any padding or margins
+        buttonStyle.border = new RectOffset(0, 0, 0, 0);
+        buttonStyle.padding = new RectOffset(0, 0, 0, 0);
+        buttonStyle.margin = new RectOffset(0, 0, 0, 0);
+
+        if (GUI.Button(buttonRect, "close", buttonStyle))
+        {
+            gameObject.SetActive(false);
+            Destroy(webViewObject);
         }
-        GUI.enabled = true;
-        x += 90;
 
-        GUI.enabled = (webViewObject == null) ? false : webViewObject.CanGoForward();
-        if (GUI.Button(new Rect(x, 10, 80, 80), ">")) {
-            webViewObject?.GoForward();
-        }
-        GUI.enabled = true;
-        x += 90;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "r")) {
+        //    webViewObject?.Reload();
+        //}
+        //x += 90;
 
-        if (GUI.Button(new Rect(x, 10, 80, 80), "r")) {
-            webViewObject?.Reload();
-        }
-        x += 90;
+        //GUI.TextField(new Rect(x, 10, 180, 80), "" + ((webViewObject == null) ? 0 : webViewObject.Progress()));
+        //x += 190;
 
-        GUI.TextField(new Rect(x, 10, 180, 80), "" + ((webViewObject == null) ? 0 : webViewObject.Progress()));
-        x += 190;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "*")) {
+        //    var g = GameObject.Find("WebViewObject");
+        //    if (g != null) {
+        //        Destroy(g);
+        //    } else {
+        //        StartCoroutine(Start());
+        //    }
+        //}
+        //x += 90;
 
-        if (GUI.Button(new Rect(x, 10, 80, 80), "*")) {
-            var g = GameObject.Find("WebViewObject");
-            if (g != null) {
-                Destroy(g);
-            } else {
-                StartCoroutine(Start());
-            }
-        }
-        x += 90;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "c")) {
+        //    webViewObject?.GetCookies(Url);
+        //}
+        //x += 90;
 
-        if (GUI.Button(new Rect(x, 10, 80, 80), "c")) {
-            webViewObject?.GetCookies(Url);
-        }
-        x += 90;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "x")) {
+        //    webViewObject?.ClearCookies();
+        //}
+        //x += 90;
 
-        if (GUI.Button(new Rect(x, 10, 80, 80), "x")) {
-            webViewObject?.ClearCookies();
-        }
-        x += 90;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "D")) {
+        //    webViewObject?.SetInteractionEnabled(false);
+        //}
+        //x += 90;
 
-        if (GUI.Button(new Rect(x, 10, 80, 80), "D")) {
-            webViewObject?.SetInteractionEnabled(false);
-        }
-        x += 90;
-
-        if (GUI.Button(new Rect(x, 10, 80, 80), "E")) {
-            webViewObject?.SetInteractionEnabled(true);
-        }
-        x += 90;
+        //if (GUI.Button(new Rect(x, 10, 80, 80), "E")) {
+        //    webViewObject?.SetInteractionEnabled(true);
+        //}
+        //x += 90;
     }
 }

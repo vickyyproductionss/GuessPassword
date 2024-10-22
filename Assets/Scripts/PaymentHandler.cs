@@ -9,12 +9,15 @@ using UnityEngine;
 using Newtonsoft.Json;
 using System;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json.Linq;
 
 public class PaymentHandler : MonoBehaviour
 {
     [SerializeField] TMP_Text AmountInWalletText;
+    [SerializeField] TMP_Text FreeChancesText;
 	[SerializeField] GameObject AddFundsWindow;
     public static int amountInWallet = 0;
+    public static int chancedPurchased = 0;
 	public FirebaseFirestore firestore;
 	public static PaymentHandler instance;
 
@@ -26,140 +29,232 @@ public class PaymentHandler : MonoBehaviour
 		public int price;
 		public int chancesToAdd;
 	}
+    public void PurchaseForPrice(int price)
+    {
+        foreach(var item in items)
+        {
+            if(item.price == price)
+            {
+                if(amountInWallet > price)
+                {
+                    PurchaseThisitem(price, item.chancesToAdd);
+                }
+                else
+                {
+                    Debug.Log("Not enough balance");
+                }
+            }
+        }
+    }
+    public void PurchaseForDigits(int price)
+    {
+        PurchaseThisService(price, "DigitsRevealed");
+    }
+    void PurchaseThisService(int price, string service)
+    {
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
 
-	private void Awake()
+        // Create a new document in "Purchases" collection with the fields price and chances
+        Dictionary<string, object> purchaseData = new Dictionary<string, object>
+        {
+            { "price", price },
+            { "service", service }
+        };
+
+        // Add a new purchase document
+        purchasesRef.AddAsync(purchaseData).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                Debug.Log("Service successfully added!");
+                StartCoroutine(CheckBalance());
+            }
+            else
+            {
+                Debug.LogError("Error adding purchase: " + task.Exception);
+            }
+        });
+    }
+
+    void PurchaseThisitem(int price, int chances)
+    {
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
+
+        // Create a new document in "Purchases" collection with the fields price and chances
+        Dictionary<string, object> purchaseData = new Dictionary<string, object>
+        {
+            { "price", price },
+            { "chances", chances }
+        };
+
+        // Add a new purchase document
+        purchasesRef.AddAsync(purchaseData).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                Debug.Log("Purchase successfully added!");
+                StartCoroutine(CheckBalance());
+            }
+            else
+            {
+                Debug.LogError("Error adding purchase: " + task.Exception);
+            }
+        });
+    }
+
+    public Dictionary<string, string> GetKeyValuesOfDocument(DocumentSnapshot docs)
+    {
+        Dictionary<string, string> keyValues = new Dictionary<string, string>();
+
+        if (docs.Exists)
+        {
+            var docData = docs.ToDictionary();
+            ExtractKeyValues(docData, keyValues, "");
+        }
+
+        return keyValues;
+    }
+
+    private void ExtractKeyValues(IDictionary<string, object> data, Dictionary<string, string> result, string parentKey)
+    {
+        foreach (var item in data)
+        {
+            string currentKey = string.IsNullOrEmpty(parentKey) ? item.Key : parentKey + "." + item.Key;
+
+            if (item.Value is IDictionary<string, object> nestedDict)
+            {
+                // Recursively extract key-values for nested dictionaries
+                ExtractKeyValues(nestedDict, result, currentKey);
+            }
+            else if (item.Value is IList<object> nestedList)
+            {
+                // Handle lists if needed
+                for (int i = 0; i < nestedList.Count; i++)
+                {
+                    if (nestedList[i] is IDictionary<string, object> listItemDict)
+                    {
+                        ExtractKeyValues(listItemDict, result, currentKey + "[" + i + "]");
+                    }
+                    else
+                    {
+                        result.Add(currentKey + "[" + i + "]", nestedList[i]?.ToString());
+                    }
+                }
+            }
+            else
+            {
+                // Add the current key-value pair if it's not nested
+                result.Add(currentKey, item.Value?.ToString());
+            }
+        }
+    }
+    public void DeductAChance()
+    {
+        chancedPurchased -= 1;
+        FreeChancesText.text = chancedPurchased.ToString() + " Free Chances";
+    }
+
+    IEnumerator CheckBalance()
+    {
+        string userId = PlayerPrefs.GetString("PF_ID");
+        Debug.Log(userId + " this is userid");
+        // Reference to the user's Payments sub-collection in Firestore
+        CollectionReference paymentsRef = firestore.Collection("Users").Document(userId).Collection("Payments");
+
+        QuerySnapshot snapshot = null;
+        double totalCapturedAmount = 0;
+
+        // Fetch all payments for the user
+        paymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                snapshot = task.Result;
+                foreach(var child in snapshot.Documents)
+                {
+                    Dictionary<string, string> docvaluesv = GetKeyValuesOfDocument(child);
+                    string amount = docvaluesv.GetValueOrDefault("payload.payment.entity.amount");
+                    string status = docvaluesv.GetValueOrDefault("payload.payment.entity.status");
+                    if(status == "captured")
+                    {
+                        double amt = double.Parse(amount);
+                        totalCapturedAmount += amt;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("Error fetching payments: " + task.Exception);
+            }
+        });
+
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
+        QuerySnapshot purchase_snapshot = null;
+        double _chances = 0;
+        // Fetch all payments for the user
+        purchasesRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                purchase_snapshot = task.Result;
+                foreach (var child in purchase_snapshot.Documents)
+                {
+                    Dictionary<string, string> docvaluesv = GetKeyValuesOfDocument(child);
+                    string amount = docvaluesv.GetValueOrDefault("price");
+                    double amt = double.Parse(amount);
+                    string chances = docvaluesv.GetValueOrDefault("chances");
+                    if(!string.IsNullOrEmpty(chances))
+                    {
+                        double chnces = double.Parse(chances);
+                        _chances += chnces;
+                    }
+                    amt *= 100;
+                    totalCapturedAmount -= amt;
+                }
+            }
+            else
+            {
+                Debug.LogError("Error fetching payments: " + task.Exception);
+            }
+        });
+
+        CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("PasswordTries");
+        QuerySnapshot chances_snapshot = null;
+        // Fetch all payments for the user
+        chancesRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted && !task.IsFaulted)
+            {
+                chances_snapshot = task.Result;
+                _chances -= chances_snapshot.Count;
+            }
+            else
+            {
+                Debug.LogError("Error fetching payments: " + task.Exception);
+            }
+        });
+        // Wait for the task to complete
+        yield return new WaitUntil(() => snapshot != null);
+
+        // Variable to hold the total captured amount
+        Debug.Log("Total Captured Amount (INR): " + totalCapturedAmount / 100);
+        amountInWallet =(int) totalCapturedAmount / 100;
+        chancedPurchased = (int)_chances;
+        AmountInWalletText.text = amountInWallet.ToString();
+        FreeChancesText.text = chancedPurchased.ToString() + " Free Chances";
+    }
+
+    private void Awake()
 	{
         firestore = FirebaseFirestore.DefaultInstance;
 		instance = this;
 	}
-
-	public void PurchaseForPrice(int price)
-	{
-		foreach(var item in items)
-		{
-			if(item.price == price)
-			{
-				PurchaseThisItem(item.price, item.chancesToAdd);
-			}
-		}
-	}
-
-	void PurchaseThisItem(int price, int chances)
-	{
-		CollectionReference PaymentsRef = firestore.Collection("PaymentRequests");
-		PaymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
-		{
-			if (task.IsCompleted)
-			{
-				QuerySnapshot snapshot = task.Result;
-				if (snapshot != null)
-				{
-					amountInWallet = 0;
-					foreach (var doc in snapshot.Documents)
-					{
-						if (doc.GetValue<string>("PlayerID") == PlayerPrefs.GetString("PF_ID"))
-						{
-							int amt = int.Parse(doc.GetValue<string>("Amount"));
-							amountInWallet += amt;
-						}
-					}
-					
-					var request = new ExecuteCloudScriptRequest
-					{
-						FunctionName = "getPlayerData",
-						FunctionParameter = new { PlayerID = PlayerPrefs.GetString("PF_ID") },
-						GeneratePlayStreamEvent = true
-					};
-
-					// Call the Cloud Script function
-					PlayFabClientAPI.ExecuteCloudScript(request, result =>
-					{
-						PlayerDataManager.PlayerData _playerData = JsonConvert.DeserializeObject<PlayerDataManager.PlayerData>(result.FunctionResult.ToString());
-						amountInWallet += _playerData.Amount;
-						amountInWallet += _playerData.SpentAmount;
-						if(amountInWallet >= price)
-						{
-							OnPurchaseComplete(price, chances);
-						}
-						else
-						{
-							AddFundsWindow.SetActive(true);
-						}
-					}, error =>
-					{
-						// Handle error response
-						PFManager.instance.ShowMessage("Error", "Something went wrong!","Error");
-					});
-				}
-			}
-		});
-	}
-
-	void OnPurchaseComplete(int price, int chances)
-	{
-		var request = new ExecuteCloudScriptRequest
-		{
-			FunctionName = "purchaseChances",
-			FunctionParameter = new { PlayerID = PlayerPrefs.GetString("PF_ID"), Price = price, Chances = chances },
-			GeneratePlayStreamEvent = true
-		};
-
-		// Call the Cloud Script function
-		PlayFabClientAPI.ExecuteCloudScript(request, result =>
-		{
-			PlayerDataManager.Instance.FetchLatestData();
-			FetchLatestAmount();
-			if(result.FunctionResult != null)
-			{
-				if(result.FunctionResult.ToString() == "1")
-				{
-					PFManager.instance.ShowMessage("Purchase Success", "Your purchase completed successfully", "Success");
-				}
-			}
-			//Handle purchase success here
-		}, error =>
-		{
-			// Handle error response
-			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
-		});
-	}
-
-    public void FetchLatestAmount()
+    private void Start()
     {
-		AmountInWalletText.text = "";
-		CollectionReference PaymentsRef = firestore.Collection("Payments");
-		PaymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
-		{
-			if (task.IsCompleted)
-			{
-				QuerySnapshot snapshot = task.Result;
-				if (snapshot != null)
-				{
-					amountInWallet = 0;
-					foreach (var doc in snapshot.Documents)
-					{
-						if (doc.GetValue<string>("PlayerID") == PlayerPrefs.GetString("PF_ID"))
-						{
-							int amt = int.Parse(doc.GetValue<string>("Amount"));
-							amountInWallet += amt;
-						}
-					}
-					if ((amountInWallet + PlayerDataManager.Instance.playerData.SpentAmount) > 0)
-					{
-						amountInWallet = amountInWallet + PlayerDataManager.Instance.playerData.SpentAmount;
-						AmountInWalletText.text = (amountInWallet).ToString();
-					}
-					else
-					{
-						amountInWallet = 0;
-						AmountInWalletText.text ="0";
-					}
-					PFManager.instance.GetTotalChancesForToday();
-				}
-			}
-		});
-	}
-	public void AddMoney()
+        StartCoroutine(CheckBalance());
+    }
+
+    public void AddMoney()
 	{
 		Screen.orientation = ScreenOrientation.Portrait;
 		SceneManager.LoadScene(1);
