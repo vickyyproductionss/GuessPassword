@@ -52,7 +52,7 @@ public class PaymentHandler : MonoBehaviour
     }
     void PurchaseThisService(int price, string service)
     {
-        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("Purchases");
 
         // Create a new document in "Purchases" collection with the fields price and chances
         Dictionary<string, object> purchaseData = new Dictionary<string, object>
@@ -78,7 +78,7 @@ public class PaymentHandler : MonoBehaviour
 
     void PurchaseThisitem(int price, int chances)
     {
-        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("Purchases");
 
         // Create a new document in "Purchases" collection with the fields price and chances
         Dictionary<string, object> purchaseData = new Dictionary<string, object>
@@ -153,10 +153,16 @@ public class PaymentHandler : MonoBehaviour
         chancedPurchased -= 1;
         FreeChancesText.text = chancedPurchased.ToString() + " Free Chances";
     }
-
+    bool RunningAyncFunction = false;
     IEnumerator CheckBalance()
     {
-        string userId = PlayerPrefs.GetString("PF_ID");
+        yield return new WaitForSeconds(1);
+        if(RunningAyncFunction)
+        {
+            Debug.Log("Going back");
+            yield break;
+        }
+        string userId = PlayerPrefs.GetString("FirebaseUserId");
         Debug.Log(userId + " this is userid");
         // Reference to the user's Payments sub-collection in Firestore
         CollectionReference paymentsRef = firestore.Collection("Users").Document(userId).Collection("Payments");
@@ -165,6 +171,7 @@ public class PaymentHandler : MonoBehaviour
         double totalCapturedAmount = 0;
 
         // Fetch all payments for the user
+        RunningAyncFunction = true;
         paymentsRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted && !task.IsFaulted)
@@ -188,7 +195,7 @@ public class PaymentHandler : MonoBehaviour
             }
         });
 
-        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("Purchases");
+        CollectionReference purchasesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("Purchases");
         QuerySnapshot purchase_snapshot = null;
         double _chances = 0;
         // Fetch all payments for the user
@@ -218,7 +225,7 @@ public class PaymentHandler : MonoBehaviour
             }
         });
 
-        CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("PasswordTries");
+        CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("PasswordTries");
         QuerySnapshot chances_snapshot = null;
         // Fetch all payments for the user
         chancesRef.GetSnapshotAsync().ContinueWithOnMainThread(task =>
@@ -238,25 +245,22 @@ public class PaymentHandler : MonoBehaviour
 
         // Variable to hold the total captured amount
         Debug.Log("Total Captured Amount (INR): " + totalCapturedAmount / 100);
-        amountInWallet =(int) totalCapturedAmount / 100;
+        amountInWallet = (int) totalCapturedAmount / 100;
         chancedPurchased = (int)_chances;
         AmountInWalletText.text = amountInWallet.ToString();
         FreeChancesText.text = chancedPurchased.ToString() + " Free Chances";
+        RunningAyncFunction = false;
     }
 
     private void Awake()
 	{
         firestore = FirebaseFirestore.DefaultInstance;
 		instance = this;
-	}
-    private void Start()
-    {
         StartCoroutine(CheckBalance());
-    }
-
+	}
     public void AddMoney()
 	{
 		Screen.orientation = ScreenOrientation.Portrait;
-		SceneManager.LoadScene(1);
+		SceneManager.LoadScene(2);
 	}
 }

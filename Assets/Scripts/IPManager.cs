@@ -152,7 +152,6 @@ public class IPManager : MonoBehaviour
 	{
 		AgainSelect();
 		StartCoroutine(ShowThisMessage("Congratulations Locker Unlocked !!! \n Prize Money Added To Wallet", false));
-		PlayerDataManager.Instance.FetchLatestData();
 	}
 	IEnumerator ShowThisMessage(string msg, bool IsError = true)
 	{

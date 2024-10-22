@@ -79,6 +79,9 @@ public class PFManager : MonoBehaviour
 	private void Awake()
 	{
 		instance = this;
+		Screen.orientation = ScreenOrientation.LandscapeRight;
+		Screen.autorotateToPortrait = false;
+		Screen.autorotateToPortraitUpsideDown = false;
 	}
 	void Start()
     {
@@ -92,7 +95,7 @@ public class PFManager : MonoBehaviour
 	#region Login
 	private void Login()
 	{
-		PlayerID = SystemInfo.deviceUniqueIdentifier;
+		PlayerID = PlayerPrefs.GetString("FirebaseUserId");
 		var request = new LoginWithCustomIDRequest
 		{
 			CustomId = PlayerID,
@@ -111,11 +114,19 @@ public class PFManager : MonoBehaviour
 			PassWindow.SetActive(true);
 		}
 		GetCurrentLockerID();
-		PlayerDataManager.Instance.FetchLatestData();
 		AskForDefaults();
 	}
+    private void OnEnable()
+    {
+        if(PlayFabClientAPI.IsClientLoggedIn())
+		{
+			Debug.Log("calling backas logged in");
+            GetCurrentLockerID();
+            AskForDefaults();
+        }
+    }
 
-	private void OnLoginFailure(PlayFabError error)
+    private void OnLoginFailure(PlayFabError error)
 	{
 		//Show a connection error message and ask user to connect to internet...
 		LoadingManager.instance.ShowLoading();
@@ -155,8 +166,8 @@ public class PFManager : MonoBehaviour
 				digits = LockerDigits.Five;
 			}
 			IPManager.instance.OnLockerTypeChanged(digits);
-			PFManager.instance.GetTotalChancesForToday();
-			PFManager.instance.GetTotalFailedAttempts();
+			GetTotalChancesForToday();
+			GetTotalFailedAttempts();
 		}
 	}
 	public void GetAllIncorrectPassesForCurrentLocker()
@@ -354,7 +365,6 @@ public class PFManager : MonoBehaviour
 			// Handle error response
 			PFManager.instance.ShowMessage("Error", "Something went wrong!", "Error");
 		});
-
 	}
 
 	public void UpdateWinningChancesForThisLocker()
@@ -495,7 +505,7 @@ public class PFManager : MonoBehaviour
 	{
 		if(!string.IsNullOrEmpty(value))
 		{
-            CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("PF_ID")).Collection("PasswordTries");
+            CollectionReference chancesRef = firestore.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("PasswordTries");
 
             // Create a new document in "Purchases" collection with the fields price and chances
             Dictionary<string, object> PasswordData = new Dictionary<string, object>
@@ -563,7 +573,6 @@ public class PFManager : MonoBehaviour
 		}
 		GetCurrentLockerID();
 		DigitRevealManager.Instance.CheckPurchasedDigits();
-		PlayerDataManager.Instance.FetchLatestData();
 	}
 
 	void SaveUnlockedLockerData(string lockerID, string PasswordUsed, string status)
@@ -747,7 +756,6 @@ public class PFManager : MonoBehaviour
 			{
 				if (result.FunctionResult.ToString() == "1")
 				{
-					PlayerDataManager.Instance.FetchLatestData();
 					GetTotalChancesForToday();
 				}
 			}

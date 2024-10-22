@@ -23,7 +23,7 @@ public class DigitRevealManager : MonoBehaviour
 	public void CheckPurchasedDigits()
 	{
 		RevealedDigits = 0;
-		FirebaseFirestore.DefaultInstance.Collection("users").Document(SystemInfo.deviceUniqueIdentifier).Collection("RevealedDigits").GetSnapshotAsync().ContinueWithOnMainThread(task =>
+		FirebaseFirestore.DefaultInstance.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("RevealedDigits").GetSnapshotAsync().ContinueWithOnMainThread(task =>
 		{
 			if(task.IsCompleted)
 			{
@@ -138,7 +138,7 @@ public class DigitRevealManager : MonoBehaviour
 			{"LockerID",lockerID},
 			{"Digits",digits }
 		};
-		FirebaseFirestore.DefaultInstance.Collection("users").Document(SystemInfo.deviceUniqueIdentifier).Collection("RevealedDigits").Document(lockerID).SetAsync(data).ContinueWithOnMainThread(task =>
+		FirebaseFirestore.DefaultInstance.Collection("Users").Document(PlayerPrefs.GetString("FirebaseUserId")).Collection("RevealedDigits").Document(lockerID).SetAsync(data).ContinueWithOnMainThread(task =>
 		{
 			if(task.IsCompleted)
 			{

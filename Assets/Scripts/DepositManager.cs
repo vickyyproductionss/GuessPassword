@@ -24,7 +24,7 @@ public class DepositManager : MonoBehaviour
     public void GoToHome()
     {
         Screen.orientation = ScreenOrientation.LandscapeRight;
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene(1);
     }
 
     public void OnAmountEditEnd()
@@ -49,11 +49,12 @@ public class DepositManager : MonoBehaviour
     {
         PayButton.interactable = false;
         int amount = int.Parse(AmountInput.text);
+        PlayerPrefs.SetInt("LastAmount", amount);
         string customerName = PlayerPrefs.GetString("PName", "GuessThePassword_Player");
         string customerEmail = PlayerPrefs.GetString("Email", "");
         string customerPhone = PlayerPrefs.GetString("Phone", "");
         string description = "GTP Wallet";
-        string userID = PlayerPrefs.GetString("PF_ID");
+        string userID = PlayerPrefs.GetString("FirebaseUserId");
         string URLWithData = baseURL + $"?amount={amount}&customerName={customerName}&customerEmail={customerEmail}&customerContact={customerPhone}&description={description}&userid={userID}";
         StartCoroutine(GetPaymentLink(URLWithData));
     }

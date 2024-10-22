@@ -19,13 +19,14 @@ public class PaymentListner : MonoBehaviour
         firestore = FirebaseFirestore.DefaultInstance;
         ListenForPayments();
     }
+    ListenerRegistration listenerRegistration;
     public void ListenForPayments()
     {
-        string userId = PlayerPrefs.GetString("PF_ID");
+        string userId = PlayerPrefs.GetString("FirebaseUserId");
         CollectionReference paymentsRef = firestore.Collection("Users").Document(userId).Collection("Payments");
 
         // Set up the listener to listen for real-time updates
-        paymentsRef.Listen(snapshot =>
+        listenerRegistration = paymentsRef.Listen(snapshot =>
         {
             if (snapshot != null && snapshot.Documents != null)
             {
@@ -42,19 +43,13 @@ public class PaymentListner : MonoBehaviour
                             string amount = docValues.GetValueOrDefault("payload.payment.entity.amount");
                             string status = docValues.GetValueOrDefault("payload.payment.entity.status");
 
-                            if (status == "captured")
+                            if (status == "captured" && int.Parse(amount)/100 == PlayerPrefs.GetInt("LastAmount"))
                             {
-                                Debug.Log("New payment captured with amount: " + amount);
-                                // Update UI or show message for captured payment
                                 ShowPaymentSuccessMessage(amount);
-
-                                // You can handle the latest added document here
-                                return; // Exit after processing the latest added document
                             }
                         }
                     }
                 }
-
             }
             else
             {
@@ -66,12 +61,21 @@ public class PaymentListner : MonoBehaviour
 
     private void ShowPaymentSuccessMessage(string amount)
     {
+        PlayerPrefs.DeleteKey("LastAmount");
         // This is just an example. You can show a message or update the UI to inform the user about the payment.
-        Debug.Log($"Payment of {int.Parse(amount)/100} INR was successfully captured!");
         PaymentStatusText.text = $"We Recieved Payment of {int.Parse(amount)/100} INR successfully!";
         SuccessIcon.SetActive(true);
         Destroy(webview.webViewObject);
         webview.gameObject.SetActive(false);
+        listenerRegistration.Stop();
+    }
+    private void Update()
+    {
+        if(PaymentStatusText.text.Contains("We Recieved Payment of") && webview.webViewObject != null && webview.gameObject.activeInHierarchy)
+        {
+            Destroy(webview.webViewObject);
+            webview.gameObject.SetActive(false);
+        }
     }
 
     public Dictionary<string, string> GetKeyValuesOfDocument(DocumentSnapshot docs)
